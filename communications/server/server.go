@@ -1,12 +1,13 @@
 package server
 
 import (
-	"communications/pkg/cache"
-	"communications/pkg/proto"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/hemantsharma1498/rtc/pkg/proto"
 	"log"
 	"net/http"
+
+	"github.com/hemantsharma1498/rtc/pkg/cache"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type CommunicationServer struct {
@@ -24,7 +25,6 @@ func InitServer(cache *cache.Cache) *CommunicationServer {
 
 func (c *CommunicationServer) Start(httpAddr string, grpcAddr string) error {
 	log.Printf("Starting http server at: %s\n", httpAddr)
-
 	// Set up a connection to the server.
 	conn, err := grpc.NewClient(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
