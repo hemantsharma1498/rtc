@@ -14,6 +14,7 @@ type CommunicationServer struct {
 	Router     *http.ServeMux
 	GrpcClient proto.MessagesClient
 	Redis      *cache.Cache
+	Clients    []Client
 }
 
 func InitServer(cache *cache.Cache) *CommunicationServer {
