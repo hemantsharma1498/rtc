@@ -5,10 +5,10 @@ import (
 )
 
 func (m *CommunicationServer) Routes() {
-	m.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		m.Login(w, r)
+	m.Router.HandleFunc("/socket", func(w http.ResponseWriter, r *http.Request) {
+		m.UpgradeConn(w, r)
 	})
-	m.Router.HandleFunc("/get-connection", func(w http.ResponseWriter, r *http.Request) {
-		m.GetCommServerAddress(w, r)
+	m.Router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		m.Sample(w, r)
 	})
 }

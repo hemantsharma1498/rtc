@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -29,9 +30,29 @@ var upgrader = websocket.Upgrader{
 func (c *CommunicationServer) UpgradeConn(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		fmt.Println(33)
 		writeResponse(w, err, "error encountered while upgrading connection", http.StatusInternalServerError)
 	}
+	fmt.Println(35)
 	defer conn.Close()
+	for {
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("Error reading message:", err)
+			break
+		}
+
+		fmt.Printf("Received: %s\n", message)
+
+		if err := conn.WriteMessage(messageType, message); err != nil {
+			fmt.Println("Error writing message:", err)
+			break
+		}
+	}
+}
+
+func (c *CommunicationServer) Sample(w http.ResponseWriter, r *http.Request) {
+	writeResponse(w, nil, "hello", http.StatusInternalServerError)
 }
 
 func writeResponse(w http.ResponseWriter, err error, msg any, httpStatus int) error {
