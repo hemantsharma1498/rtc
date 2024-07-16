@@ -13,7 +13,7 @@ import (
 	"github.com/hemantsharma1498/rtc/store/types"
 )
 
-const dsn = "hemant:1@Million@tcp(localhost)/members"
+const dsn = "hemant:1@Million@tcp(localhost)/communications"
 
 func NewMembersDbConnector() store.Connecter {
 	return &Messaging{}
@@ -37,10 +37,17 @@ func (m *Messaging) Connect() (store.Storage, error) {
 
 func (m *Messaging) SaveMessage(message *types.Message) error {
 	//@TODO name gets add when group chats are introduced
+	row := m.db.QueryRow(`SELECT channel_id FROM channels WHERE channel_id = ?`, message.ChannelId)
+	channelId := -1
+	row.Scan(&channelId)
+	if channelId == -1 {
+		log.Printf("message sent for invalid channel id: %d\n", message.ChannelId)
+		return errors.New("invalid channel id")
+	}
 	_, err := m.db.Exec(`
-	INSERT INTO messages(sender_id, message, channel_id)
-	VALUES(?, ?, ?)
-	`, message.Sender, message.Payload, message.Channel)
+	INSERT INTO messages(sender_id, message, channel_id, created_at)
+	VALUES(?, ?, ?, ?)
+	`, message.SenderId, message.Payload, message.ChannelId, message.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -52,12 +59,12 @@ func (m *Messaging) GetMessages(channelIds []int) ([]*types.Message, error) {
 		return nil, errors.New("empty slice sent")
 	}
 	placeHolders, params, err := getPlaceholders(channelIds)
-	query := `
+	query := fmt.Sprintf(`
 		SELECT 
-		message_id, sender_id, name, message, channel_id
+			message_id, sender_id, name, message, channel_id
 		FROM messages
-		WHERE channel_id IN 
-	` + placeHolders
+		WHERE channel_id IN (%s)
+	`, placeHolders)
 	fmt.Printf("GetMessages query: %s\n", query)
 
 	rows, err := m.db.Query(query, params...)

@@ -1,12 +1,13 @@
 package types
 
 type Message struct {
-	Payload  string `json:"payload"`
-	Org      string `json:"org"`
-	Channel  string `json:"channel"`  //id of the channel where the message is sent
-	Name     string `json:"name"`     //name of the channel where the message is sent (null for dms)
-	Sender   string `json:"sender"`   //id of the person who sent the message
-	Receiver string `json:"receiver"` //id of the person who received the message
+	Payload    string `json:"payload"`
+	OrgId      string `json:"org"`
+	ChannelId  int    `json:"channel"`   //id of the channel where the message is sent
+	Name       string `json:"name"`      //name of the channel where the message is sent (null for dms)
+	SenderId   int    `json:"sender"`    //id of the person who sent the message
+	ReceiverId int    `json:"receiver"`  //id of the person who received the message
+	CreatedAt  int    `json:"createdAt"` //unix timestamp when the message was created
 }
 
 type Client struct {
