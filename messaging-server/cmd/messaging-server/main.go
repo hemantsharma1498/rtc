@@ -7,8 +7,8 @@ import (
 	"github.com/hemantsharma1498/rtc/store/mysqlDb"
 )
 
-const httpAddress = ":3020"
-const grpcAddress = ":8081"
+const httpAddress = ":3030"
+const grpcAddress = ":3031"
 
 func main() {
 	log.Printf("Initialising members server")

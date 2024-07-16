@@ -9,6 +9,6 @@ func (m *Members) Routes() {
 		m.SaveMessage(w, r)
 	})
 	m.Router.HandleFunc("/get-chat-history", func(w http.ResponseWriter, r *http.Request) {
-		m.GetMessage(w, r)
+		m.GetMessages(w, r)
 	})
 }
