@@ -26,6 +26,8 @@ message GetMessageReq {
     string org = 1;
     string channel = 2;
     string msg = 3;
+    int sender = 3;
+    int receiver = 3;
 }
 
 message GetMessageReply {
