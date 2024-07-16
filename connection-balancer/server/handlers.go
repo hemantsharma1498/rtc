@@ -1,13 +1,14 @@
 package server
 
 import (
-	"connection-balancer/pkg/proto"
 	"context"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/hemantsharma1498/rtc/pkg/proto"
 )
 
 type ServerAddressResponse struct {
@@ -46,6 +47,7 @@ func (c *ConnectionBalancer) GetCommServerAddress(w http.ResponseWriter, r *http
 	}
 
 	resp := ServerAddressResponse{Address: address}
+	log.Printf("Sent address for org: %s\n", resp.Address)
 	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Printf("Encountered an error while marshalling address for %s\n", org)

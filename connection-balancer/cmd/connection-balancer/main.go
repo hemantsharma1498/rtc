@@ -1,14 +1,15 @@
 package main
 
 import (
-	"connection-balancer/server"
-	"connection-balancer/store"
 	"context"
 	"log"
+
+	"github.com/hemantsharma1498/rtc/server"
+	"github.com/hemantsharma1498/rtc/store"
 )
 
-const httpAddress = ":8080"
-const grpcAddress = 8081
+const httpAddress = ":3010"
+const grpcAddress = 3011
 
 func main() {
 	log.Printf("Initialising connection balancer")

@@ -5,9 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/hemantsharma1498/rtc/pkg/proto"
+	"github.com/hemantsharma1498/rtc/store/types"
 	"log"
-	"members/pkg/proto"
-	"members/store/types"
 	"net/http"
 
 	"golang.org/x/crypto/argon2"

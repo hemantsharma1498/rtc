@@ -1,13 +1,13 @@
 package server
 
 import (
-	"connection-balancer/pkg/proto"
 	"database/sql"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 
+	"github.com/hemantsharma1498/rtc/pkg/proto"
 	"google.golang.org/grpc"
 )
 

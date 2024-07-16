@@ -11,8 +11,8 @@ const (
 	CachePassword = ""
 )
 
-const httpAddress = ":3010"
-const grpcAddress = ":9091"
+const httpAddress = ":3020"
+const grpcAddress = ":3011"
 
 func main() {
 	log.Printf("Initialising members server")
