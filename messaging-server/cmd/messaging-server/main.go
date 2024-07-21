@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/hemantsharma1498/rtc/server"
+	"github.com/hemantsharma1498/rtc/server/types"
 	"github.com/hemantsharma1498/rtc/store"
 	"github.com/hemantsharma1498/rtc/store/mysqlDb"
-	"github.com/hemantsharma1498/rtc/store/types"
 )
 
 const httpAddress = ":3030"
@@ -18,7 +18,7 @@ func main() {
 	log.Printf("Initialising members server")
 
 	log.Printf("Connecting to database...")
-	store, err := mysqlDb.NewMembersDbConnector().Connect()
+	store, err := mysqlDb.NewMessagingDbConnector().Connect()
 	if err != nil {
 		log.Panicf("Unable to connect to db, error: %s\n", err)
 	}

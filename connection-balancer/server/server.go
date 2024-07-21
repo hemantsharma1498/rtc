@@ -1,13 +1,13 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 
 	"github.com/hemantsharma1498/rtc/pkg/proto"
+	"github.com/hemantsharma1498/rtc/store"
 	"google.golang.org/grpc"
 )
 
@@ -16,12 +16,12 @@ type ConnectionBalancer struct {
 	GrpcServer      *grpc.Server
 	LoadingStatus   bool
 	ServerAddresses map[string]string
-	Db              *sql.DB
+	Store           store.Storage
 	proto.ConnectionServer
 }
 
-func InitServer(d *sql.DB) *ConnectionBalancer {
-	s := &ConnectionBalancer{Router: http.NewServeMux(), LoadingStatus: false, ServerAddresses: make(map[string]string, 1), Db: d}
+func InitServer(store store.Storage) *ConnectionBalancer {
+	s := &ConnectionBalancer{Router: http.NewServeMux(), LoadingStatus: false, ServerAddresses: make(map[string]string, 1), Store: store}
 	s.LoadCommunicationServers()
 	s.Routes()
 	return s
@@ -53,42 +53,11 @@ func (c *ConnectionBalancer) Start(httpAddr string, grpcAddr int) error {
 }
 
 func (c *ConnectionBalancer) LoadCommunicationServers() {
-	if err := c.getServerAddresses(100, 0); err != nil {
-		log.Printf("Encountered an error while fetching server addresses: %s\n", err)
-	}
-}
-
-func (c *ConnectionBalancer) getServerAddresses(limit int, offset int) error {
-	rows, err := c.Db.Query("SELECT org, address FROM communication_servers LIMIT ? OFFSET ?", limit, offset)
-	defer rows.Close()
+	servers, err := c.Store.GetAllCommunicationServers()
 	if err != nil {
-		if err == sql.ErrNoRows {
-			c.LoadingStatus = true
-			return nil
-		}
-		return err
+		log.Panicf("error while loading servers: %s\n", err)
 	}
-	foundRows := false
-	for rows.Next() {
-		foundRows = true
-		var (
-			org     string
-			address string
-		)
-		if err := rows.Scan(&org, &address); err != nil {
-			return err
-		}
-		if c.ServerAddresses[org] == "" {
-			c.ServerAddresses[org] = address
-		}
+	for _, s := range servers {
+		c.ServerAddresses[s.Organisation] = s.Address
 	}
-
-	if !foundRows {
-		c.LoadingStatus = true
-		return nil
-	}
-
-	c.getServerAddresses(limit+100, limit)
-
-	return nil
 }

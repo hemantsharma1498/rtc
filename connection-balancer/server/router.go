@@ -5,9 +5,13 @@ import (
 )
 
 func (c *ConnectionBalancer) Routes() {
-	c.Router.HandleFunc("/get-cserver-addresses/{org}", func(w http.ResponseWriter, r *http.Request) {
+	c.Router.HandleFunc("/cserver-addresses/{org}", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		c.GetCommServerAddress(w, r)
+	})
+	c.Router.HandleFunc("/cserver-list", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		c.GetAllCommunicationServers(w, r)
 	})
 }
 

@@ -51,10 +51,6 @@ func (c *CommunicationServer) UpgradeConn(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (c *CommunicationServer) Sample(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, nil, "hello", http.StatusInternalServerError)
-}
-
 func writeResponse(w http.ResponseWriter, err error, msg any, httpStatus int) error {
 	if err != nil {
 		log.Printf("Error occured while decoding req json body: %s\n", err)

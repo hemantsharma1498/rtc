@@ -2,8 +2,9 @@ package mysqlDb
 
 import (
 	"database/sql"
-	"members/store"
+
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/hemantsharma1498/rtc/store"
 )
 
 const dsn = "hemant:1@Million@tcp(localhost)/members"
@@ -41,4 +42,3 @@ func initDb() (*sql.DB, error) {
 
 	return db, nil
 }
-

@@ -2,7 +2,8 @@ package store
 
 import (
 	"context"
-	"members/store/types"
+
+	"github.com/hemantsharma1498/rtc/store/types"
 )
 
 type Storage interface {

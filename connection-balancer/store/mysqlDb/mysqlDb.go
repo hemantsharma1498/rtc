@@ -1,4 +1,4 @@
-package store
+package mysqlDb
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/hemantsharma1498/rtc/store"
 	"github.com/pressly/goose/v3"
 )
 
@@ -13,19 +14,17 @@ const dsn = "hemant:1@Million@tcp(localhost)/connection_balancer"
 const migrationDir = "./store/migrations"
 
 type ConnBal struct {
-	Db   *sql.DB
-	host string
-	port string
+	db *sql.DB
 }
 
-func NewConnBalConnector() *ConnBal {
+func NewConnBalConnector() store.Connecter {
 	return &ConnBal{}
 }
 
-func (c *ConnBal) Connect(ctx context.Context) (*ConnBal, error) {
-	if c.Db == nil {
+func (c *ConnBal) Connect() (store.Storage, error) {
+	if c.db == nil {
 		var err error
-		c.Db, err = initDb(ctx)
+		c.db, err = initDb()
 		if err != nil {
 			return nil, err
 		}
@@ -34,7 +33,7 @@ func (c *ConnBal) Connect(ctx context.Context) (*ConnBal, error) {
 	return c, nil
 }
 
-func initDb(ctx context.Context) (*sql.DB, error) {
+func initDb() (*sql.DB, error) {
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

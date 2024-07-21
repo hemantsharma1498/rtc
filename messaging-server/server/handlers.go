@@ -14,7 +14,8 @@ const (
 )
 
 func (m *Members) SaveMessage(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, nil, "account created successfully", http.StatusOK)
+
+	writeResponse(w, nil, nil, http.StatusOK)
 }
 
 func (m *Members) GetMessages(w http.ResponseWriter, r *http.Request) {

@@ -25,6 +25,7 @@ service Greeter {
 }
 
 service Connection {
+    rpc GetAllCommunicationServers(GetAllCommunicationServersReq) returns (GetAllCommunicationServersReply){}
     rpc GetCommServerAddr(GetCommServerAddrReq) returns (GetCommServerAddrReply) {}
 }
 
@@ -35,6 +36,20 @@ message GetCommServerAddrReq {
 message GetCommServerAddrReply {
     string address = 1;
 }
+
+/*
+message GetAllCommunicationServersReq {
+}
+
+message GetAllCommunicationServersReply {
+  repeated CommServers CommServer = 1;
+}
+
+message CommServer{
+  string OrgName = 1;
+  string OrgAddress = 2;
+}
+*/
 
 // The request message containing the user's name.
 message HelloRequest {

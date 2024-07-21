@@ -9,10 +9,6 @@ func (m *CommunicationServer) Routes() {
 		enableCors(&w)
 		m.UpgradeConn(w, r)
 	})
-	m.Router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
-		m.Sample(w, r)
-	})
 }
 
 func enableCors(w *http.ResponseWriter) {

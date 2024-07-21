@@ -2,7 +2,7 @@ package types
 
 type Message struct {
 	Payload    string `json:"payload"`
-	OrgId      string `json:"org"`
+	OrgId      int    `json:"org"`       //id of the org where the message is sent
 	ChannelId  int    `json:"channel"`   //id of the channel where the message is sent
 	Name       string `json:"name"`      //name of the channel where the message is sent (null for dms)
 	SenderId   int    `json:"sender"`    //id of the person who sent the message
