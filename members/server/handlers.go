@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/hemantsharma1498/rtc/pkg/proto"
-	"github.com/hemantsharma1498/rtc/store/types"
+	"github.com/hemantsharma1498/rtc/members/pkg/proto"
+	"github.com/hemantsharma1498/rtc/members/store/types"
 	"log"
 	"net/http"
 

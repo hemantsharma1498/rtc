@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/hemantsharma1498/rtc/store"
+	"github.com/hemantsharma1498/rtc/messaging/store"
 )
 
 type Members struct {

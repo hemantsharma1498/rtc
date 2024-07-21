@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/hemantsharma1498/rtc/store"
+	"github.com/hemantsharma1498/rtc/members/store"
 )
 
 const dsn = "hemant:1@Million@tcp(localhost)/members"

@@ -1,8 +1,6 @@
 package store
 
-import "github.com/hemantsharma1498/rtc/server/types"
-
-
+import "github.com/hemantsharma1498/rtc/messaging/server/types"
 
 type Storage interface {
 	SaveMessage(message *types.Message) error

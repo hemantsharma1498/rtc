@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/hemantsharma1498/rtc/server/types"
-	"github.com/hemantsharma1498/rtc/store"
+	"github.com/hemantsharma1498/rtc/messaging/server/types"
+	"github.com/hemantsharma1498/rtc/messaging/store"
 )
 
 const dsn = "hemant:1@Million@tcp(localhost)/communications"
@@ -37,9 +37,9 @@ func (m *Messaging) Connect() (store.Storage, error) {
 
 func (m *Messaging) CreateChannel(channelId, orgId int) (int, error) {
 	row := m.db.QueryRow(`SELECT channel_id FROM channels WHERE channel_id = ?`, channelId)
-  if row.Err() != nil {
-    return -1, row.Err()
-  }
+	if row.Err() != nil {
+		return -1, row.Err()
+	}
 	found := -1
 	row.Scan(&found)
 	// there's a new dm channel that's opened, save it
@@ -53,12 +53,12 @@ func (m *Messaging) CreateChannel(channelId, orgId int) (int, error) {
 
 func (m *Messaging) SaveMessage(message *types.Message) error {
 	//@TODO name gets add when group chats are introduced
-  _, err := m.CreateChannel(message.ChannelId, message.OrgId)
-  if err != nil {
-    if err.Error() != "channel exists for the given channel id"{
-      return err
-    }
-  }
+	_, err := m.CreateChannel(message.ChannelId, message.OrgId)
+	if err != nil {
+		if err.Error() != "channel exists for the given channel id" {
+			return err
+		}
+	}
 	_, err = m.db.Exec(`
 	INSERT INTO messages(sender_id, message, channel_id, created_at)
 	VALUES(?, ?, ?, ?)

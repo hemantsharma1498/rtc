@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"members/store/types"
+
+	"github.com/hemantsharma1498/rtc/members/store/types"
 )
 
 func (m *MembersDbConnector) CreateAccount(ctx context.Context, member *types.MemberAccount) (*types.MemberAccount, error) {

@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 
-	"github.com/hemantsharma1498/rtc/store/types"
+	"github.com/hemantsharma1498/rtc/members/store/types"
 )
 
 type Storage interface {

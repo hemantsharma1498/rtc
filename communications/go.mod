@@ -1,4 +1,4 @@
-module github.com/hemantsharma1498/rtc
+module github.com/hemantsharma1498/rtc/communications
 
 go 1.22.2
 

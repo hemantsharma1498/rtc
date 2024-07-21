@@ -2,10 +2,10 @@ package server
 
 import (
 	"log"
-	"members/pkg/proto"
-	"members/store"
 	"net/http"
 
+	"github.com/hemantsharma1498/rtc/members/pkg/proto"
+	"github.com/hemantsharma1498/rtc/members/store"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
