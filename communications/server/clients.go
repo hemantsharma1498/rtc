@@ -10,6 +10,13 @@ type Clients struct {
 	mutex *sync.Mutex
 }
 
+type Client struct {
+	Email        string //email id for the time being
+	Name         string
+	Organisation string   //org name
+	Channels     []string //Channel ids (senderEmail+receiverEmail for now) that a user is involved with
+}
+
 func (c *Clients) Add(conn *websocket.Conn, client Client) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()

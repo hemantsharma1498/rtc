@@ -9,7 +9,8 @@ type Message struct {
 	Receiver string `json:"receiver"` //id of the person who received the message
 }
 
-type Client struct {
-	UserId   int
-	Channels []int //Channel ids that a user is involved with
+type CreateChannelReq struct {
+	Organisation string `json:"organisationn"`
+	Sender       string `json:"senderEmail"`
+	Receiver     string `json:"receiverEmail"`
 }

@@ -4,7 +4,16 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/hemantsharma1498/rtc/messaging/server/types"
 )
+
+type CreateChannelReq struct {
+	Channel      string `json:"channel"`
+	Organisation string `json:"organisationn"`
+	Sender       string `json:"senderEmail"`
+	Receiver     string `json:"receiverEmail"`
+}
 
 const (
 	saltSize int    = 16
@@ -14,7 +23,15 @@ const (
 )
 
 func (m *Members) SaveMessage(w http.ResponseWriter, r *http.Request) {
-
+	//@TODO add bit to save mesage to db
+	var data types.Message
+	err := decodeReqBody(r, data)
+	if err != nil {
+		log.Printf("encountered an error while decoding message body: %s\n", err)
+		writeResponse(w, nil, nil, http.StatusOK)
+		return
+	}
+	m.Cache.Publish(data.ChannelId, data)
 	writeResponse(w, nil, nil, http.StatusOK)
 }
 

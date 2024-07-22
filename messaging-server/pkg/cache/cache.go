@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -94,18 +95,19 @@ func (c *Cache) Subscribe(channels []string) (<-chan *redis.Message, error) {
 	return c.client.Subscribe(ctx, channels...).Channel(), nil
 }
 
-func (c *Cache) Receive(channels []string) (<-chan *redis.Message, error) {
-	err := c.isConnected()
-	if err != nil {
-		log.Printf("Encountered an error while subscribing: %s\n", err)
-		return nil, err
+/*
+	func (c *Cache) Receive(channel string) (<-chan *redis.Message, error) {
+		err := c.isConnected()
+		if err != nil {
+			log.Printf("Encountered an error while subscribing: %s\n", err)
+			return nil, err
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
+		defer cancel()
+		return c.client.Subscribe(ctx, channel).Channel(), nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
-	defer cancel()
-	return c.client.Subscribe(ctx, channels...).Channel(), nil
-}
-
-func (c *Cache) Publish(channel string, message string) error {
+*/
+func (c *Cache) Publish(channel string, message interface{}) error {
 	err := c.isConnected()
 	if err != nil {
 		log.Printf("Encountered an error while subscribing: %s\n", err)
@@ -114,6 +116,7 @@ func (c *Cache) Publish(channel string, message string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
 
+	fmt.Printf("publishing message %v to channel %s\n", message, channel)
 	c.client.Publish(ctx, channel, message)
 	return nil
 }

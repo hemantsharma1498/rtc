@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/hemantsharma1498/rtc/pkg/cache"
-	"github.com/hemantsharma1498/rtc/server"
+	"github.com/hemantsharma1498/rtc/communications/pkg/cache"
+	"github.com/hemantsharma1498/rtc/communications/server"
 	"log"
 )
 
