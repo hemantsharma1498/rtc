@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hemantsharma1498/rtc/messaging/server/types"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -107,7 +108,7 @@ func (c *Cache) Subscribe(channels []string) (<-chan *redis.Message, error) {
 		return c.client.Subscribe(ctx, channel).Channel(), nil
 	}
 */
-func (c *Cache) Publish(channel string, message interface{}) error {
+func (c *Cache) Publish(message types.Message) error {
 	err := c.isConnected()
 	if err != nil {
 		log.Printf("Encountered an error while subscribing: %s\n", err)
@@ -116,7 +117,7 @@ func (c *Cache) Publish(channel string, message interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
 
-	fmt.Printf("publishing message %v to channel %s\n", message, channel)
-	c.client.Publish(ctx, channel, message)
+	fmt.Printf("publishing message %v to channel %s\n", message.Payload, message.ChannelId)
+	c.client.Publish(ctx, message.ChannelId, message)
 	return nil
 }

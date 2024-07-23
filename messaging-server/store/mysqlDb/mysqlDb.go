@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strconv"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -53,7 +54,9 @@ func (m *Messaging) CreateChannel(channelId, orgId int) (int, error) {
 
 func (m *Messaging) SaveMessage(message *types.Message) error {
 	//@TODO name gets add when group chats are introduced
-	_, err := m.CreateChannel(message.ChannelId, message.OrgId)
+	strChan, _ := strconv.Atoi(message.ChannelId)
+	strOrg, _ := strconv.Atoi(message.OrgId)
+	_, err := m.CreateChannel(strChan, strOrg)
 	if err != nil {
 		if err.Error() != "channel exists for the given channel id" {
 			return err

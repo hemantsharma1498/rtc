@@ -1,13 +1,16 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -35,12 +38,26 @@ func (c *CommunicationServer) ActiveConnections(w http.ResponseWriter, r *http.R
 func (c *CommunicationServer) ReceiveMsg(conn *websocket.Conn) {
 	defer func() {
 		c.Clients.mutex.Lock()
+		clientEmail := c.Clients.CMap[conn].Email
 		delete(c.Clients.CMap, conn)
 		c.Clients.mutex.Unlock()
+		conn.Close()
+		log.Printf("Connection closed and removed for %s\n", clientEmail)
 	}()
-
 	for {
+		c.Clients.mutex.Lock()
 		client := c.Clients.CMap[conn]
+		c.Clients.mutex.Unlock()
+
+		fmt.Println(53)
+		client.mutex.Lock()
+		for len(client.Channels) == 0 {
+			fmt.Println(55)
+			client.cond.Wait()
+		}
+		fmt.Println(59)
+		client.mutex.Unlock()
+		fmt.Println(60)
 		pbsb, err := c.Redis.Receive(client.Channels)
 		if err != nil {
 			log.Printf("encountered an error while receiving for")
@@ -52,6 +69,7 @@ func (c *CommunicationServer) ReceiveMsg(conn *websocket.Conn) {
 	}
 
 }
+
 func (c *CommunicationServer) UpgradeConn(w http.ResponseWriter, r *http.Request) {
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  readBufferSize,
@@ -68,39 +86,36 @@ func (c *CommunicationServer) UpgradeConn(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		writeResponse(w, err, "error encountered while upgrading connection", http.StatusInternalServerError)
 	}
-	client := Client{Email: userEmail, Name: name, Organisation: organisation, Channels: make([]string, 0)}
+	client := Client{Email: userEmail, Name: name, Organisation: organisation, Channels: make([]string, 0), mutex: &sync.Mutex{}}
+	client.cond = sync.NewCond(client.mutex)
 	log.Printf("created client: %v\n", client)
 	c.Clients.Add(conn, client)
 	go c.ReceiveMsg(conn)
 }
 
 func (c *CommunicationServer) CreateChannel(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(78)
 	data := &CreateChannelReq{}
 	if err := decodeReqBody(r, data); err != nil {
-		log.Printf("encountered an error: %s\n", err)
+		log.Printf("encountered an error: %s\n", err.Error())
 		writeResponse(w, err, "error encountered while parsing body", http.StatusInternalServerError)
 		return
 	}
+
 	channel := strconv.Itoa(int(hash(data.Sender + data.Receiver)))
 	c.Clients.mutex.Lock()
-	defer c.Clients.mutex.Unlock()
 	conns := getClientsFromEmail(c.Clients.CMap, []string{data.Receiver, data.Sender})
+	c.Clients.mutex.Unlock()
+
 	if len(conns) == 0 {
-		log.Printf("no users found for the given emails: %s, %s\n", data.Sender, data.Receiver)
 		writeResponse(w, errors.New("encountered an error"), "error encountered", http.StatusInternalServerError)
 		return
 	}
+
 	for _, conn := range conns {
-		channels := append(c.Clients.CMap[conn].Channels, channel)
-		client := c.Clients.CMap[conn]
-		fmt.Println("client: ", client)
-		client.Channels = channels
-		c.Clients.CMap[conn] = client
+		c.Clients.UpdateChannels(conn, []string{channel})
 	}
-	var res struct {
-		ChannelId string `json:"channelId"`
-	}
+	res := &CreateChannelRes{}
+	c.Redis.Subscribe([]string{channel})
 	res.ChannelId = channel
 	writeResponse(w, nil, res, http.StatusCreated)
 	return
@@ -125,11 +140,26 @@ func getClientsFromEmail(cMap map[*websocket.Conn]Client, emails []string) []*we
 }
 
 func decodeReqBody(r *http.Request, d any) error {
+	// Read the body
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return fmt.Errorf("could not read request body: %v", err)
+	}
+	defer r.Body.Close()
+
+	// Log the raw body content
+	log.Println("Request Body:", string(bodyBytes))
+
+	// Reset the request body so it can be read again
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	// Decode the JSON body
 	if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
-		return err
+		return fmt.Errorf("could not decode request body: %v", err)
 	}
 	return nil
 }
+
 func writeResponse(w http.ResponseWriter, err error, msg any, httpStatus int) error {
 	if err != nil {
 		log.Printf("Error occured while decoding req json body: %s\n", err)

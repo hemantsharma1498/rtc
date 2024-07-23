@@ -10,7 +10,11 @@ type Message struct {
 }
 
 type CreateChannelReq struct {
-	Organisation string `json:"organisationn"`
-	Sender       string `json:"senderEmail"`
-	Receiver     string `json:"receiverEmail"`
+	Organisation string `json:"Organisation"`
+	Sender       string `json:"Sender"`
+	Receiver     string `json:"Receiver"`
+}
+
+type CreateChannelRes struct {
+	ChannelId string `json:"channelId"`
 }
