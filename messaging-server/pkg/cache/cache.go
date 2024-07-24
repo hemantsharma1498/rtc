@@ -116,8 +116,15 @@ func (c *Cache) Publish(message types.Message) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
-
+	msgBytes, err := json.Marshal(message)
+	if err != nil {
+		log.Printf("Encountered an error while publishing: %s\n", err)
+		return err
+	}
 	fmt.Printf("publishing message %v to channel %s\n", message.Payload, message.ChannelId)
-	c.client.Publish(ctx, message.ChannelId, message)
+	if err := c.client.Publish(ctx, message.ChannelId, msgBytes).Err(); err != nil {
+		log.Printf("Encountered an error while publishing: %s\n", err)
+		return err
+	}
 	return nil
 }

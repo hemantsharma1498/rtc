@@ -10,9 +10,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -35,7 +35,14 @@ func (c *CommunicationServer) ActiveConnections(w http.ResponseWriter, r *http.R
 	writeResponse(w, nil, res, http.StatusOK)
 }
 
-func (c *CommunicationServer) ReceiveMsg(conn *websocket.Conn) {
+func HandleMsgs(conn *websocket.Conn, redisChannel <-chan *redis.Message) {
+	for {
+		msg := <-redisChannel
+		conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+	}
+}
+
+func (c *CommunicationServer) HandleConn(conn *websocket.Conn) {
 	defer func() {
 		c.Clients.mutex.Lock()
 		clientEmail := c.Clients.CMap[conn].Email
@@ -45,29 +52,27 @@ func (c *CommunicationServer) ReceiveMsg(conn *websocket.Conn) {
 		log.Printf("Connection closed and removed for %s\n", clientEmail)
 	}()
 	for {
-		c.Clients.mutex.Lock()
-		client := c.Clients.CMap[conn]
-		c.Clients.mutex.Unlock()
-
-		fmt.Println(53)
-		client.mutex.Lock()
-		for len(client.Channels) == 0 {
-			fmt.Println(55)
-			client.cond.Wait()
+		select {
+		case newChannel := <-c.Clients.NewChannelChan:
+			c.Clients.mutex.Lock()
+			client, ok := c.Clients.CMap[conn]
+			c.Clients.mutex.Unlock()
+			if !ok {
+				log.Println("Client not found in map")
+				continue
+			}
+			client.Channels = append(client.Channels, newChannel.Channel)
+			c.Clients.mutex.Lock()
+			c.Clients.CMap[conn] = client
+			c.Clients.mutex.Unlock()
+			msgChannel, err := c.Redis.Subscribe([]string{newChannel.Channel})
+			if err != nil {
+				log.Println("encountered an error while subscribing to channel", err)
+			}
+			go HandleMsgs(conn, msgChannel)
 		}
-		fmt.Println(59)
-		client.mutex.Unlock()
-		fmt.Println(60)
-		pbsb, err := c.Redis.Receive(client.Channels)
-		if err != nil {
-			log.Printf("encountered an error while receiving for")
-		}
 
-		msg := <-pbsb
-		fmt.Println("message: ", msg)
-		conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
 	}
-
 }
 
 func (c *CommunicationServer) UpgradeConn(w http.ResponseWriter, r *http.Request) {
@@ -82,15 +87,14 @@ func (c *CommunicationServer) UpgradeConn(w http.ResponseWriter, r *http.Request
 	userEmail := r.URL.Query().Get("email")
 	organisation := r.PathValue("org")
 	name := r.URL.Query().Get("name")
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		writeResponse(w, err, "error encountered while upgrading connection", http.StatusInternalServerError)
 	}
-	client := Client{Email: userEmail, Name: name, Organisation: organisation, Channels: make([]string, 0), mutex: &sync.Mutex{}}
-	client.cond = sync.NewCond(client.mutex)
-	log.Printf("created client: %v\n", client)
+	client := Client{Email: userEmail, Name: name, Organisation: organisation, Channels: make([]string, 0)}
 	c.Clients.Add(conn, client)
-	go c.ReceiveMsg(conn)
+	go c.HandleConn(conn)
 }
 
 func (c *CommunicationServer) CreateChannel(w http.ResponseWriter, r *http.Request) {
@@ -105,15 +109,15 @@ func (c *CommunicationServer) CreateChannel(w http.ResponseWriter, r *http.Reque
 	c.Clients.mutex.Lock()
 	conns := getClientsFromEmail(c.Clients.CMap, []string{data.Receiver, data.Sender})
 	c.Clients.mutex.Unlock()
-
 	if len(conns) == 0 {
 		writeResponse(w, errors.New("encountered an error"), "error encountered", http.StatusInternalServerError)
 		return
 	}
 
 	for _, conn := range conns {
-		c.Clients.UpdateChannels(conn, []string{channel})
+		c.Clients.NewChannelChan <- &NewChannel{Conn: conn, Channel: channel}
 	}
+
 	res := &CreateChannelRes{}
 	c.Redis.Subscribe([]string{channel})
 	res.ChannelId = channel
@@ -146,9 +150,6 @@ func decodeReqBody(r *http.Request, d any) error {
 		return fmt.Errorf("could not read request body: %v", err)
 	}
 	defer r.Body.Close()
-
-	// Log the raw body content
-	log.Println("Request Body:", string(bodyBytes))
 
 	// Reset the request body so it can be read again
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))

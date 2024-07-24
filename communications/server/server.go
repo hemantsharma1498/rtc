@@ -24,7 +24,7 @@ func InitServer(cache *cache.Cache) *CommunicationServer {
 	return &CommunicationServer{
 		Router:  http.NewServeMux(),
 		Redis:   cache,
-		Clients: &Clients{make(map[*websocket.Conn]Client, 0), &sync.Mutex{}},
+		Clients: &Clients{make(map[*websocket.Conn]Client, 0), &sync.Mutex{}, make(chan *Message), make(chan *NewChannel)},
 	}
 }
 
